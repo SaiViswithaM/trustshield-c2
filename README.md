@@ -1,15 +1,15 @@
- TRUSTSHIELD-C2
+#  TRUSTSHIELD-C2
 
 ### Evidence-Driven Autonomous Cyber-Reasoning for Mission-Critical Software
 
 > **AI Proposes. Evidence Proves.**
 
-**Team:** TRINETRA   
+**Team:** TRINETRA 
 **Track:** AI Kavach — Terrier Cyber Quest 2026
 
 
 
- Overview
+##  Overview
 
 TRUSTSHIELD-C2 is a proposed software-only cyber-reasoning system designed
 to help discover, analyse, remediate and verify vulnerabilities in
@@ -24,9 +24,9 @@ evidence with AI-assisted reasoning and automated verification.
 
 
 
- Core Pipeline
+##  Core Pipeline
 
-
+```text
 ┌─────────────────────┐
 │   TARGET SOFTWARE   │
 └──────────┬──────────┘
