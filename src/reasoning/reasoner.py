@@ -2,9 +2,6 @@ import json
 import os
 
 from dotenv import load_dotenv
-
-load_dotenv()
-
 from openai import OpenAI
 
 from src.reasoning.evidence_fusion import EvidenceFusion
@@ -13,32 +10,51 @@ from src.reasoning.prompts import (
     build_user_prompt
 )
 
+load_dotenv()
 
-class OpenAICyberReasoner:
+
+class OpenRouterCyberReasoner:
+
     def __init__(self):
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY")
 
         if not api_key:
             raise RuntimeError(
-                "OPENAI_API_KEY is not set. "
+                "OPENROUTER_API_KEY is not set. "
                 "Check your .env file."
             )
 
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1"
+        )
+
         self.evidence_fusion = EvidenceFusion()
 
     def analyse(self, evidence):
+
         fused_evidence = self.evidence_fusion.fuse(evidence)
 
         prompt = build_user_prompt(fused_evidence)
 
-        response = self.client.responses.create(
-            model="gpt-5.6",
-            instructions=SYSTEM_PROMPT,
-            input=prompt
+        response = self.client.chat.completions.create(
+            model="openrouter/free",
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.1
         )
 
-        return json.loads(response.output_text)
+        output = response.choices[0].message.content
+
+        return json.loads(output)
 
 
 if __name__ == "__main__":
@@ -70,7 +86,7 @@ if __name__ == "__main__":
         ]
     }
 
-    reasoner = OpenAICyberReasoner()
+    reasoner = OpenRouterCyberReasoner()
 
     result = reasoner.analyse(evidence)
 
