@@ -17,6 +17,7 @@ class EvidenceFusion:
                 "source": finding.get("source", "unknown"),
                 "type": finding.get("type", "unknown"),
                 "severity": finding.get("severity", "UNKNOWN"),
+                "confidence": finding.get("confidence", 0.0),
                 "location": finding.get("location", "unknown"),
                 "evidence": finding.get("evidence", ""),
             })
