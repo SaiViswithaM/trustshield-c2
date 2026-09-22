@@ -11,6 +11,11 @@ def convert_analysis_to_evidence(
 
     findings = []
 
+    target = analysis_result.get(
+        "target",
+        "unknown"
+    )
+
     # -------------------------------------------------
     # 1. Static analysis findings
     # -------------------------------------------------
@@ -47,23 +52,28 @@ def convert_analysis_to_evidence(
     # 2. Dynamic analysis observations
     # -------------------------------------------------
 
-    for observation in analysis_result.get(
+    dynamic_observations = analysis_result.get(
         "dynamic_observations",
         []
-    ):
+    )
+
+    for observation in dynamic_observations:
+
         if observation.get("status") == "SUSPICIOUS":
+
             findings.append({
                 "source": "dynamic_analysis",
                 "type": "command_injection",
                 "severity": "UNKNOWN",
                 "confidence": 0.60,
-                "location": analysis_result.get(
-                    "target",
-                    "unknown"
-                ),
+                "location": target,
                 "evidence": (
-                    "Suspicious input observed: "
-                    f"{observation.get('input_value', '')}"
+                    f"Input: "
+                    f"{observation.get('input_value', '')}\n"
+                    f"Behavior: "
+                    f"{observation.get('behavior', '')}\n"
+                    f"Details: "
+                    f"{observation.get('details', '')}"
                 ),
             })
 
@@ -71,12 +81,15 @@ def convert_analysis_to_evidence(
     # 3. Fuzzing evidence
     # -------------------------------------------------
 
-    suspicious_fuzz_cases = []
-
-    for case in analysis_result.get(
+    fuzz_cases = analysis_result.get(
         "fuzz_cases",
         []
-    ):
+    )
+
+    suspicious_fuzz_cases = []
+
+    for case in fuzz_cases:
+
         category = case.get(
             "category",
             ""
@@ -88,30 +101,63 @@ def convert_analysis_to_evidence(
         }:
             suspicious_fuzz_cases.append(case)
 
+    # -------------------------------------------------
+    # 4. Correlate fuzz cases with runtime observations
+    # -------------------------------------------------
+
+    executed_fuzz_cases = []
+
+    for observation in dynamic_observations:
+
+        input_value = observation.get(
+            "input_value",
+            ""
+        )
+
+        if any(
+            case.get("input") == input_value
+            for case in suspicious_fuzz_cases
+        ):
+            executed_fuzz_cases.append({
+                "input": input_value,
+                "status": observation.get(
+                    "status",
+                    "UNKNOWN"
+                ),
+                "behavior": observation.get(
+                    "behavior",
+                    "UNKNOWN"
+                ),
+                "details": observation.get(
+                    "details",
+                    ""
+                ),
+            })
+
     if suspicious_fuzz_cases:
+
         findings.append({
             "source": "fuzzing",
             "type": "command_injection",
             "severity": "UNKNOWN",
             "confidence": 0.50,
-            "location": analysis_result.get(
-                "target",
-                "unknown"
-            ),
-            "evidence": (
-                f"{len(suspicious_fuzz_cases)} "
-                "suspicious fuzz cases generated; "
-                "execution was not performed."
-            ),
+            "location": target,
+            "evidence": {
+                "generated_cases": len(
+                    suspicious_fuzz_cases
+                ),
+                "executed_cases": len(
+                    executed_fuzz_cases
+                ),
+                "runtime_results": executed_fuzz_cases,
+            },
         })
 
     # -------------------------------------------------
-    # 4. Return Member 1 evidence format
+    # 5. Return Member 1 evidence format
     # -------------------------------------------------
 
     return {
-        "target": analysis_result.get(
-            "target"
-        ),
+        "target": target,
         "findings": findings,
     }

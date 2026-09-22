@@ -13,16 +13,15 @@ class AnalysisEngine:
         fuzzer = SecurityFuzzer()
         fuzz_cases = fuzzer.generate_cases()
 
-        # 3. Analyze the generated inputs
+        # 3. Execute controlled inputs against the target
         dynamic_analyzer = DynamicAnalyzer()
 
         dynamic_observations = []
 
         for case in fuzz_cases:
             observation = dynamic_analyzer.analyze_observation(
+                target_path=file_path,
                 input_value=case.input_value,
-                behavior="not_executed",
-                details=f"Generated fuzz case: {case.category}",
             )
 
             dynamic_observations.append(

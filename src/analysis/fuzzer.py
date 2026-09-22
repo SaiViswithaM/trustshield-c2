@@ -10,13 +10,25 @@ class FuzzCase:
 class SecurityFuzzer:
 
     def generate_cases(self) -> list[FuzzCase]:
+        marker = "INJECTION_MARKER"
+
         return [
             FuzzCase("", "empty"),
             FuzzCase("127.0.0.1", "normal"),
             FuzzCase("localhost", "normal"),
-            FuzzCase("127.0.0.1;test", "command_separator"),
-            FuzzCase("127.0.0.1 && test", "command_chaining"),
-            FuzzCase("127.0.0.1 | test", "pipe"),
-            FuzzCase("$(test)", "command_substitution"),
-            FuzzCase("`test`", "command_substitution"),
+
+            FuzzCase(
+                f"python -c print(123) && echo {marker}",
+                "command_chaining",
+            ),
+
+            FuzzCase(
+                f"python -c print(456) || echo {marker}",
+                "command_chaining",
+            ),
+
+            FuzzCase(
+                f"python -c print(789) & echo {marker}",
+                "command_chaining",
+            ),
         ]
