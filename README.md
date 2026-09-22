@@ -5,10 +5,6 @@
 > **AI Proposes. Evidence Proves.**
 
 **Team:** TRINETRA 
-**Track:** AI Kavach — Terrier Cyber Quest 2026
-
-
-
 ##  Overview
 
 TRUSTSHIELD-C2 is a proposed software-only cyber-reasoning system designed
